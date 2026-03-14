@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>网格���算器</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    background: #f2f2f7;
+    min-height: 100vh;
+    padding: 20px 16px 40px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1c1c1e;
+    margin-bottom: 20px;
+  }
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .input-group {
+    margin-bottom: 14px;
+  }
+  .input-group:last-child { margin-bottom: 0; }
+  label {
+    display: block;
+    font-size: 13px;
+    color: #8e8e93;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #e5e5ea;
+    border-radius: 10px;
+    font-size: 17px;
+    color: #1c1c1e;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  input:focus { border-color: #007aff; }
+  button {
+    width: 100%;
+    padding: 14px;
+    background: #007aff;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.15s;
+  }
+  button:active { opacity: 0.75; }
+  .result-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    display: none;
+  }
+  .result-card.show { display: block; }
+  .section-title {
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    letter-spacing: 0.5px;
+  }
+  .up-title { background: #34c759; }
+  .base-title { background: #007aff; }
+  .down-title { background: #ff3b30; }
+  .grid-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 16px;
+    border-bottom: 1px solid #f2f2f7;
+    transition: background 0.1s;
+  }
+  .grid-row:last-child { border-bottom: none; }
+  .grid-row:active { background: #f2f2f7; }
+  .grid-label {
+    font-size: 14px;
+    color: #8e8e93;
+    font-weight: 500;
+    min-width: 60px;
+  }
+  .grid-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1c1c1e;
+    font-variant-numeric: tabular-nums;
+  }
+  .grid-change {
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 60px;
+    text-align: right;
+  }
+  .up .grid-price { color: #34c759; }
+  .up .grid-change { color: #34c759; }
+  .down .grid-price { color: #ff3b30; }
+  .down .grid-change { color: #ff3b30; }
+  .base .grid-price { color: #007aff; }
+  .base .grid-label { color: #007aff; font-weight: 700; }
+</style>
+</head>
+<body>
+<h1>📊 网格计算器</h1>
+
+<div class="card">
+  <div class="input-group">
+    <label>基准价格</label>
+    <input type="number" id="price" placeholder="例如：40000" inputmode="decimal">
+  </div>
+  <div class="input-group">
+    <label>网格间距（%）</label>
+    <input type="number" id="pct" placeholder="例如：1" inputmode="decimal" step="0.1">
+  </div>
+</div>
+
+<button onclick="calc()">计算网格</button>
+
+<br>
+
+<div class="result-card" id="result">
+  <div id="grid-content"></div>
+</div>
+
+<script>
+function fmt(n) {
+  if (n >= 1000) {
+    return n.toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+  return n.toPrecision(6).replace(/\.?0+$/, '');
+}
+
+function calc() {
+  const price = parseFloat(document.getElementById('price').value);
+  const pct = parseFloat(document.getElementById('pct').value);
+  if (!price || !pct || price <= 0 || pct <= 0) {
+    alert('请输入有效的价格和百分比');
+    return;
+  }
+
+  const ratio = pct / 100;
+  let html = '';
+
+  // 上方10格（从+10到+1，从上到下显示）
+  html += '<div class="section-title up-title">▲ 上方网格</div>';
+  for (let i = 10; i >= 1; i--) {
+    const p = price * Math.pow(1 + ratio, i);
+    const totalPct = (pct * i).toFixed(1);
+    html += `<div class="grid-row up">
+      <span class="grid-label">+${i}格</span>
+      <span class="grid-price">${fmt(p)}</span>
+      <span class="grid-change">+${totalPct}%</span>
+    </div>`;
+  }
+
+  // 基准
+  html += '<div class="section-title base-title">● 基准价格</div>';
+  html += `<div class="grid-row base">
+    <span class="grid-label">基准</span>
+    <span class="grid-price">${fmt(price)}</span>
+    <span class="grid-change">0%</span>
+  </div>`;
+
+  // 下方10格
+  html += '<div class="section-title down-title">▼ 下方网格</div>';
+  for (let i = 1; i <= 10; i++) {
+    const p = price * Math.pow(1 - ratio, i);
+    const totalPct = (pct * i).toFixed(1);
+    html += `<div class="grid-row down">
+      <span class="grid-label">-${i}格</span>
+      <span class="grid-price">${fmt(p)}</span>
+      <span class="grid-change">-${totalPct}%</span>
+    </div>`;
+  }
+
+  document.getElementById('grid-content').innerHTML = html;
+  document.getElementById('result').classList.add('show');
+  setTimeout(() => document.getElementById('result').scrollIntoView({behavior:'smooth'}), 100);
+}
+
+// 回车触发计算
+document.addEventListener('keydown', e => { if (e.key === 'Enter') calc(); });
+</script>
+</body>
+</html>
