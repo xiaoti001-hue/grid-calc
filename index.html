@@ -161,7 +161,7 @@ function calc() {
   // 上方10格（从+10到+1，从上到下显示）
   html += '<div class="section-title up-title">▲ 上方网格</div>';
   for (let i = 10; i >= 1; i--) {
-    const p = price * Math.pow(1 + ratio, i);
+    const p = price * (1 + ratio * i);
     const totalPct = (pct * i).toFixed(1);
     html += `<div class="grid-row up">
       <span class="grid-label">+${i}格</span>
@@ -181,7 +181,7 @@ function calc() {
   // 下方10格
   html += '<div class="section-title down-title">▼ 下方网格</div>';
   for (let i = 1; i <= 10; i++) {
-    const p = price * Math.pow(1 - ratio, i);
+    const p = price * (1 - ratio * i);
     const totalPct = (pct * i).toFixed(1);
     html += `<div class="grid-row down">
       <span class="grid-label">-${i}格</span>
